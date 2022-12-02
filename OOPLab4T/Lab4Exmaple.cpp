@@ -69,6 +69,7 @@ public:
 	VectorFloat& operator/=(const int& b);
 	VectorFloat& operator/=(const float& b);
 
+	VectorFloat& operator/(const VectorFloat& b);
 	VectorFloat operator/(const int& b);
 	VectorFloat operator/(const float& b);
 
@@ -359,6 +360,14 @@ VectorFloat& VectorFloat::operator/=(const float& b) {
 	return *this;
 	return tmp;
 }
+
+
+VectorFloat& VectorFloat::operator/(const  VectorFloat& b)
+{
+	if (num != b.num) { std::cout << " Error : vectors of different sizes are used in operation %= \n"; return *this; }
+	for (int i = 0; i < num; i++) v[i] /= b.v[i];
+	return *this;
+}
 VectorFloat VectorFloat::operator/(const int& b) {
 	VectorFloat rez(*this);
 	VectorFloat tmp;
@@ -418,6 +427,7 @@ void task1() {
 	VectorFloat vect1(5);
 	VectorFloat vect2(4, 5);
 	VectorFloat vect3(4, 12.1);
+	VectorFloat vect4(4, 0);
 	VectorFloat vectcopy(vect2);
 	float a = 2.5;
 	cout << "Test class VectorFloat : " << endl;
@@ -476,11 +486,23 @@ void task1() {
 	vect2 /= 0;
 	cout << vect2;
 	cout << "------------------------------------------------------------------" << endl;
+	cout << "Expression 1" << endl;
+	cout << "vect4= (vect2 * vect3) / 3 + vect3 * 10 + vect2 / a :" << endl;
+	vect4 = (vect2 * vect3) / 3 + vect3 * 10 + vect2 / a;
+	cout << vect4;
+	cout << "------------------------------------------------------------------" << endl;
+	cout << "Expression 2" << endl;
+	cout << "vect4= vect3 * a + vect2 * 2 - (vect3 / vect2) :" << endl;
+	vect4 = vect3 * a + vect2 * 2 - (vect3 / vect2) ;
+	cout << vect4;
+	cout << "------------------------------------------------------------------" << endl;
 	     if (vectcopy < vect2)  cout << "ObjectCopy less ObjectDef" << endl;
 	else if (vectcopy > vect2)  cout << "ObjectCopy More ObjectDef" << endl;
 	else if (vectcopy <= vect2) cout << "ObjectCopy less Exactly ObjectDef" << endl;
 	else if (vectcopy >= vect2) cout << "ObjectCopy more Exactly ObjectDef" << endl;
 }
+//--------------------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------2-----------------------------------------------------------------
 
 void task2(){
 }
