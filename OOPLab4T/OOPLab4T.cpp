@@ -5,20 +5,32 @@
 
 
 #include <iostream>
-
+using namespace std;
 // Ваші файли загловки 
 //
 #include "Lab4Exmaple.h"
 int main()
 {
-    std::cout << " Lab #4  !\n";
-    //  Код виконання завдань
-    //  Головне меню завдань
-    //  Функції та класи можуть знаходитись в інших файлах проекту
+    cout << " Lab #4  !\n";
+    char ch = '5';
+    do {
 
-    int chain = 1;
-    if (chain == 1) chain = mainExample1();
-    if (chain == 2) chain = mainExample2();
-    if (chain == 3) chain = mainExample3();
+        MenuTask();
+        cout << " >>> ";
+        ch = cin.get();
+
+        cin.get();
+
+        switch (ch) {
+        case '1': task1();  break;
+        case '2': task2();  break;
+        case '3': task3();  break;
+        case '4': return 0;
+        }
+        cout << " Press any key and enter\n";
+        ch = cin.get();
+    } while (ch != '5');
+
+    return 0;
 
 }

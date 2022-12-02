@@ -1,4 +1,5 @@
 #pragma once
-int mainExample1();
-int mainExample2();
-int mainExample3();
+void task1();
+void task2();
+void task3();
+void MenuTask();
