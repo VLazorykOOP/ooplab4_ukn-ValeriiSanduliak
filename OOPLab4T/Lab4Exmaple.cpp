@@ -3,7 +3,7 @@
 
 using namespace std;
 enum STATE {
-	OK, BAD_INIT, BAD_DIV
+	OK, BAD_INIT, BAD_DIV,BAD_MULTIPLY
 };
 void MenuTask()
 {
@@ -20,8 +20,6 @@ class VectorFloat
 	int num = 2;
 	int state = 0;
 	static float badIndexRef;
-	static int numVec;
-
 public:
 	VectorFloat():VectorFloat(1){}
 	VectorFloat(int n);
@@ -37,7 +35,7 @@ public:
 	}
 	friend istream& operator>>(istream& is, VectorFloat& s);
 	friend ostream& operator<<(ostream& os, VectorFloat& s);
-
+	friend class MatrixFloat;
 
 	float& operator[](int index);
 	VectorFloat& operator++();
@@ -500,57 +498,461 @@ void task1() {
 	else if (vectcopy > vect2)  cout << "ObjectCopy More ObjectDef" << endl;
 	else if (vectcopy <= vect2) cout << "ObjectCopy less Exactly ObjectDef" << endl;
 	else if (vectcopy >= vect2) cout << "ObjectCopy more Exactly ObjectDef" << endl;
+	cout << "End testing." << endl;
 }
 //--------------------------------------------------------------------------------------------------------------------------
 //--------------------------------------------------------2-----------------------------------------------------------------
 
-void task2(){
+class MatrixFloat {
+private:
+	VectorFloat* arr=nullptr;
+	int n=1;
+	int m=1;
+	int state=0;				//state
+public:
+	MatrixFloat():arr(nullptr),n(0),m(0),state(0){}
+	MatrixFloat(int n) :MatrixFloat(n, n) {};
+	MatrixFloat(int n, int m) :MatrixFloat(n, m, 0) {};
+	MatrixFloat(int n, int m, float);
+	MatrixFloat(const MatrixFloat& s);
+	MatrixFloat& operator=(const MatrixFloat& s);
+	MatrixFloat& operator=(MatrixFloat&& s) noexcept;
+	~MatrixFloat() {
+		//	std::cout << " del mat";
+		if (arr) delete[] arr;
+	}
+	friend istream& operator>>(istream& is, MatrixFloat& s);
+	friend ostream& operator<<(ostream& os, MatrixFloat& s);
+	VectorFloat& operator[](int index);
+	//reload oparation
+	MatrixFloat& operator++();
+	MatrixFloat& operator--();
+
+	MatrixFloat& operator+=(const MatrixFloat& s);
+	MatrixFloat& operator+=(const float& b);
+	MatrixFloat  operator+(const MatrixFloat& b);
+	MatrixFloat  operator+(const int& b);
+	MatrixFloat  operator+(const float& b);
+
+	MatrixFloat& operator-=(const MatrixFloat& s);
+	MatrixFloat& operator-=(const int& b);
+	MatrixFloat& operator-=(const float& b);
+	MatrixFloat  operator-(const MatrixFloat& b);
+	MatrixFloat  operator-(const int& b);
+	MatrixFloat  operator-(const float& b);
+
+
+	MatrixFloat& operator*=(const int& b);
+	MatrixFloat& operator*=(const float& b);
+	MatrixFloat operator*(const MatrixFloat& b);
+	VectorFloat operator*(const VectorFloat& b);   //matrix*vect
+	MatrixFloat operator*(const float& b);
+
+
+	MatrixFloat& operator/=(const int& b);
+	MatrixFloat& operator/=(const float& b);
+	MatrixFloat operator/(const int& b);
+	MatrixFloat operator/(const float& b);
+
+	bool operator>(const  MatrixFloat& s);
+	bool operator>=(const MatrixFloat& s);
+	bool operator<(const  MatrixFloat& s);
+	bool operator<=(const MatrixFloat& s);
+
+	int getState() {
+		return state;
+	}
+};
+MatrixFloat::MatrixFloat(int ni, int mi, float b)
+{
+	if (ni <= 0) n = 1; else n = ni;
+	if (mi <= 0) m = 1; else m = mi;
+	arr = new VectorFloat[n];
+	for (int i = 0; i < n; i++) arr[i].Init(m, b);
 }
+
+MatrixFloat::MatrixFloat(const MatrixFloat& s)
+{
+	n = s.n;
+	m = s.m;
+	int i;
+	arr = new VectorFloat[n];
+	for (i = 0; i < n; i++) arr[i].Init(m, 0);
+	for (i = 0; i < n; i++)
+		for (int j = 0; j < m; j++)  arr[i][j] = s.arr[i][j];
+
+}
+
+MatrixFloat& MatrixFloat::operator=(const MatrixFloat& s)
+{
+	if (this != &s) {
+		int i;
+		if (n != s.n || m != s.m) {
+			n = s.n; m = s.m;
+			if (arr != nullptr) {
+				delete[] arr;
+			}
+			arr = new VectorFloat[n];
+			for (i = 0; i < n; i++) arr[i].Init(m, 0);
+		}
+		for (i = 0; i < n; i++)
+			for (int j = 0; j < m; j++)  arr[i][j] = s.arr[i][j];
+
+	}
+	return *this;
+}
+VectorFloat& MatrixFloat::operator[](int index)
+{
+	if (index >= 0 && index < n) return arr[index];
+	cout << " Error : operator[] - index index out of range \n";
+	return arr[0];
+}
+
+MatrixFloat& MatrixFloat::operator=(MatrixFloat&& s) noexcept
+{
+	n = s.n; m = s.m;
+	arr = s.arr;
+	s.arr = nullptr;
+	s.n = 0; s.m = 0;
+	return *this;
+}
+istream& operator>>(istream& is, MatrixFloat& s)
+{
+	for (int i = 0; i < s.n; i++) is >> s.arr[i];
+	return is;
+}
+
+ostream& operator<<(ostream& os, MatrixFloat& s)
+{
+	for (int i = 0; i < s.n; i++) os << s.arr[i];  // << endl;
+	return os;
+}
+MatrixFloat& MatrixFloat::operator++() {
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < m; j++) {
+			arr[i][j] += 1;
+		}
+	}
+	return *this;
+}
+MatrixFloat& MatrixFloat::operator--() {
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < m; j++) {
+			arr[i][j] -= 1;
+		}
+	}
+	return *this;
+}
+MatrixFloat& MatrixFloat::operator+=(const MatrixFloat& s) {
+	if (s.n == n) for (int i = 0; i < n; i++) arr[i] += s.arr[i];
+	else {
+		cout << "Error: matrices of different dimensions \n";
+		cout << "The += operation was not performed. \n";
+	}
+	return *this;
+}
+
+MatrixFloat& MatrixFloat::operator+=(const float& b) {
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < m; j++) {
+			arr[i][j] += b;
+		}
+	}
+	return *this;
+}
+MatrixFloat  MatrixFloat::operator+(const MatrixFloat& b) {
+	MatrixFloat mat(*this);
+	if (b.n == n) {
+		mat += b;
+	}
+	else
+	{
+		cout << "Error: matrices of different dimensions \n";
+		cout << "The += operation was not performed. \n";
+	}
+	return mat;
+}
+MatrixFloat  MatrixFloat::operator+(const int& b) {
+	MatrixFloat mat(*this);
+	mat += b;
+	return mat;
+}
+MatrixFloat  MatrixFloat::operator+(const float& b) {
+	MatrixFloat mat(*this);
+	mat += b;
+	return mat;
+}
+MatrixFloat& MatrixFloat::operator-=(const MatrixFloat& s) {
+	if (s.n == n) for (int i = 0; i < n; i++) arr[i] -= s.arr[i];
+	else {
+		cout << "Error: matrices of different dimensions \n";
+		cout << "The += operation was not performed. \n";
+	}
+	return *this;
+}
+MatrixFloat& MatrixFloat::operator-=(const int& b) {
+	for (int i = 0; i < n; i++) arr[i] -= b;
+	return *this;
+}
+MatrixFloat& MatrixFloat::operator-=(const float& b) {
+	for (int i = 0; i < n; i++) arr[i] -= b;
+	return *this;
+}
+MatrixFloat  MatrixFloat::operator-(const MatrixFloat& b) {
+	MatrixFloat mat(*this);
+	mat -= b;
+	return mat;
+}
+MatrixFloat  MatrixFloat::operator-(const int& b) {
+	MatrixFloat mat(*this);
+	mat -= b;
+	return mat;
+}
+MatrixFloat  MatrixFloat::operator-(const float& b) {
+	MatrixFloat mat(*this);
+	mat -= b;
+	return mat;
+}
+MatrixFloat& MatrixFloat::operator*=(const int& b) {
+	MatrixFloat tmp;
+	if (b == 0) {
+		tmp.state = BAD_MULTIPLY;
+		cout << "Error Multiply" << endl;
+		return *this;
+	}
+	else for (int i = 0; i < n; i++) arr[i] *= b;
+	return *this;
+	return tmp;
+}
+MatrixFloat& MatrixFloat::operator*=(const float& b) {
+	MatrixFloat tmp;
+	if (b == 0) {
+		tmp.state = BAD_MULTIPLY;
+		cout << "Error Multiply" << endl;
+		return *this;
+	}
+	else for (int i = 0; i < n; i++) arr[i] *= b;
+	return *this;
+	return tmp;
+}
+MatrixFloat  MatrixFloat::operator*(const MatrixFloat& b) {
+	if (n == b.m && m == b.m) {
+		MatrixFloat ret(m, n);
+		for (int i = 0; i < n; i++)
+			for (int j = 0; j < m; j++)
+			{
+				ret[i][j] = 0;
+				for (int l = 0; l < m; l++) ret[i][j] += arr[i][l] * b.arr[l][j];
+			}
+		return ret;
+	}
+	else {
+		cout << "Error: matrices of different dimensions \n";
+		cout << "The *  operation was not performed. \n";
+		return *this;
+	}
+}
+VectorFloat  MatrixFloat::operator*(const VectorFloat& b) {   //matrix*vect
+	VectorFloat ret(n);
+	if (n == b.num) {
+		for (int i = 0; i < n; i++)
+			for (int j = 0; j < m; j++)
+			{
+				ret[i] += arr[i][j] * b.v[j];
+			}
+	}
+	else {
+		cout << "Error: matrix and vector different dimensions \n";
+		cout << "The *  operation was not performed. \n";
+	}
+	return ret;
+}
+MatrixFloat  MatrixFloat::operator*(const float& b) {
+	MatrixFloat mat(*this);
+	MatrixFloat tmp;
+	if (b == 0) {
+		tmp.state = BAD_MULTIPLY;
+		cout << "Error Multiply" << endl;
+		return mat;
+	}
+	else mat *= b;
+	return mat;
+	return tmp;
+}
+MatrixFloat& MatrixFloat::operator/=(const int& b) {
+	MatrixFloat tmp;
+	if (b==0)
+	{
+		tmp.state = BAD_DIV;
+		cout << "Eror BAD_DIV" << endl;
+		return *this;
+	}
+	else for (int i = 0; i < n; i++) arr[i] /= b;
+	return *this;
+	return tmp;
+}
+MatrixFloat& MatrixFloat::operator/=(const float& b) {
+	MatrixFloat tmp;
+	if (b == 0)
+	{
+		tmp.state = BAD_DIV;
+		cout << "Eror BAD_DIV" << endl;
+		return *this;
+	}
+	else for (int i = 0; i < n; i++) arr[i] /= b;
+	return *this;
+	return tmp;
+}
+MatrixFloat  MatrixFloat::operator/(const int& b) {
+	MatrixFloat mat(*this);
+	MatrixFloat tmp;
+	if (b == 0)
+	{
+		tmp.state = BAD_DIV;
+		cout << "Eror BAD_DIV" << endl;
+		return mat;
+	}
+	else for (int i = 0; i < n; i++) arr[i] /= b;
+	return mat;
+	return tmp;
+}
+MatrixFloat  MatrixFloat::operator/(const float& b) {
+	MatrixFloat mat(*this);
+	MatrixFloat tmp;
+	if (b == 0)
+	{
+		tmp.state = BAD_DIV;
+		cout << "Eror BAD_DIV" << endl;
+		return mat;
+	}
+	else for (int i = 0; i < n; i++) arr[i] /= b;
+	return mat;
+	return tmp;
+}
+bool MatrixFloat::operator>(const  MatrixFloat& s) {
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < m; j++) {
+			if (arr[i][j] > s.arr[i][j])
+				return true;
+		}
+	}
+	return false;
+}
+bool MatrixFloat::operator>=(const MatrixFloat& s) {
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < m; j++) {
+			if (arr[i][j] >= s.arr[i][j])
+				return true;
+		}
+	}
+	return false;
+}
+bool MatrixFloat::operator<(const  MatrixFloat& s) {
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < m; j++) {
+			if (arr[i][j] < s.arr[i][j])
+				return true;
+		}
+	}
+	return false;
+}
+bool MatrixFloat::operator<=(const MatrixFloat& s) {
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < m; j++) {
+			if (arr[i][j] >= s.arr[i][j])
+				return true;
+		}
+	}
+	return false;
+}
+void task2(){
+	MatrixFloat A(3);
+	MatrixFloat B(3, 3);
+	MatrixFloat C(3, 3, 10);
+	MatrixFloat D(3, 3, 5.2);
+	MatrixFloat E(3, 3, 12);
+	MatrixFloat matcopy(C);
+	VectorFloat vector1(3,5);
+	VectorFloat vector2(3);
+	float value = 2.4;
+	cout << "Test class MatrixFloat : " << endl;
+	cout << "------------------------------------------------------------------" << endl;
+	cout << A;
+	cout << "------------------------------------------------------------------" << endl;
+	cout << B;
+	cout << "------------------------------------------------------------------" << endl;
+	cout << C;
+	cout << "------------------------------------------------------------------" << endl;
+	cout << D;
+	cout << "------------------------------------------------------------------" << endl;
+	cout << vector1;
+	cout << "------------------------------------------------------------------" << endl;
+	cout << "Test reload operation:" << endl;
+	cout << "------------------------------------------------------------------" << endl;
+	cout << "Reload ++ :" << endl;
+	cout << (++C);
+	cout << "------------------------------------------------------------------" << endl;
+	cout << "Reload -- :" << endl;
+	cout << (--C);
+	cout << "------------------------------------------------------------------" << endl;
+	cout << "Reload matrix + matrix :" << endl;
+	C += D;
+	cout << C;
+	cout << "------------------------------------------------------------------" << endl;
+	cout << "Reload matrix + float :" << endl;
+	C += value;
+	cout << C;
+	cout << "------------------------------------------------------------------" << endl;
+	cout << "Reload matrix - float :" << endl;
+	C -= value;
+	cout << C;
+	cout << "------------------------------------------------------------------" << endl;
+	cout << "Reload matrix - matrix :" << endl;
+	C -= D;
+	cout << C;
+	cout << "------------------------------------------------------------------" << endl;
+	cout << "Reload matix * matrix :" << endl;
+	C = C * D;
+	cout << C;
+	cout << "------------------------------------------------------------------" << endl;
+	cout << "Reload matrix * value :" << endl;
+	C *= value;
+	cout << C;
+	cout << "------------------------------------------------------------------" << endl;
+	cout << "Reload matrix * 0 :" << endl;
+	C *= 0;
+	cout << C;
+	cout << "------------------------------------------------------------------" << endl;
+	cout << "Reload matrix / float :" << endl;
+	C /= value;
+	cout << C;
+	cout << "------------------------------------------------------------------" << endl;
+	cout << "Reload matrix / 0 :" << endl;
+	C /= 0;
+	cout << C;
+	cout << "------------------------------------------------------------------" << endl;
+	cout << "Expression 1" << endl;
+	cout << "C = C + D * value - B * 2 + C / 10 : " << endl;
+	C = (C + D * value - B * 2 + C) / 10;
+	cout << C;
+	cout << "------------------------------------------------------------------" << endl;
+	cout << "Expression 2" << endl;
+	cout << "vector2 = (C * vector1 + D * vector1) : " << endl;
+	vector2 = ((C * vector1 + D * vector1)+100)/value;
+	cout << vector2;
+	cout << "------------------------------------------------------------------" << endl;
+	cout << "Object state " << matcopy.getState() << endl;
+	if (matcopy < C)  cout << "ObjectCopy less ObjectDef" << endl;
+	else if (matcopy > C)  cout << "ObjectCopy More ObjectDef" << endl;
+	else if (matcopy <= C) cout << "ObjectCopy less Exactly ObjectDef" << endl;
+	else if (matcopy >= C) cout << "ObjectCopy more Exactly ObjectDef" << endl;
+	cout << "End testing." << endl;
+}
+//--------------------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------3-----------------------------------------------------------------
 
 void task3(){}
 /*
-/// <summary>
-	/// Задано : A,B,C,D,F  -  Матриці комплесних чисел
-	///          a,b,c  -  Вектори комплесних чисел 
-	///          _a,_b,_c - комплексні числа.
-	/// Обчислити вираз : F = A+B*_a-B*_c+C/_b; 
-	///                   c = F*a + D*b         
-	/// </summary>
-	/// <returns></returns>
-
-int mainExample2() {
-	ComplexMatrix A(5),  B(5), C(5), D(5), F(5);
-	ComplexVector a(5), b(5), c(5);
-	ComplexDouble _a(3.2, 5), _b(1, 2), _c = RandComplexDouble();
-	
-		A.RandComplexMatrix();
-		B.RandComplexMatrix();
-		C.RandComplexMatrix();
-		D.RandComplexMatrix();
-		a.RandComplexVector();
-		b.RandComplexVector();
-		c.RandComplexVector();
-
-		cout << endl;
-		cout << "Matrix A \n" << A;
-		cout << "Matrix B \n" << B;
-		cout << "Matrix C \n" << C;
-		cout << "Matrix D \n" << D;
-		cout << endl;
-		cout << "Vector a \n" << a;
-		cout << "Vector b \n" << b;
-		cout << "Vector c \n" << c;
-	
-	/// Обчислити вираз : F = A+B*_a-B*_c+C/_b; 
-	///                   c = F*a + D*b     
-	F = A + B * _a - B * _c + C / _b;
-	cout << "Matrix F \n" << F;
-	c = F * a + D * b;
-	cout << "Vector c \n" << c;
-
-	
-	return 3;
-}
 int mainExample3() {
 	cout << " End begin \n";
 	uint Flight[5] = { 12,32,23,43,43 };
